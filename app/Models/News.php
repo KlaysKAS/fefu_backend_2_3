@@ -18,6 +18,4 @@ class News extends Model
             ]
         ];
     }
-
-
 }
