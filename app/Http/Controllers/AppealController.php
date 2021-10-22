@@ -8,10 +8,10 @@ use Illuminate\Http\Request;
 class AppealController extends Controller
 {
     private $max_length_input = [
-        'name' => 21,
-        'phone' => 12,
-        'email' => 101,
-        'message' => 101
+        'name' => 20,
+        'phone' => 11,
+        'email' => 100,
+        'message' => 100
     ];
 
     public function __invoke(Request $request)
