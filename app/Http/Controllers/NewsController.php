@@ -10,8 +10,12 @@ use function MongoDB\BSON\toJSON;
 class NewsController extends Controller
 {
     public function getList() {
-        $news_list =  News::query()->where('is_published', '=', 'true')->
-        where('published_at', '<=', Carbon::now())->orderBy('id')->simplePaginate(5);
+        $news_list =  News::query()
+            ->where('is_published', true)
+            ->where('published_at', '<=', Carbon::now())
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->simplePaginate(5);
 
         return view('news_list', ['news' => $news_list]);
     }
