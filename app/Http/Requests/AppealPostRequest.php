@@ -31,10 +31,11 @@ class AppealPostRequest extends FormRequest
             'surname' => ['required', 'string', 'max:40'],
             'name' => ['required', 'string', 'max:20'],
             'patronymic' => ['nullable', 'string', 'max:20'],
-            'age' => ['required', 'string', new AgeRule],
+            'age' => ['required', 'integer', 'between:14,123'],
             'gender' => ['required', Rule::in([Gender::MALE, Gender::FEMALE])],
-            'phone' => ['nullable', 'string', new PhoneRule],
-            'email' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9а-яА-Я]+([-+.\']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/i'],
+            'phone' => ['nullable', 'string', 'regex:/^[+]{0,1}[7-8][ ]?[(]([0-9]{3})[)][ ]?([0-9]{2})[-]([0-9]{2})[-]([0-9]{3})$/'],
+            'email' => ['nullable', 'required_without:phone', 'string', 'max:100',
+                'regex:/^[a-zA-Z0-9а-яА-Я]+([-+.\']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/i'],
             'message' => ['required', 'string', 'max:100'],
         ];
     }

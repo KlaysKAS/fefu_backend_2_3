@@ -58,7 +58,7 @@
         <div>
             <label>Возраст</label>
             <br>
-            <input name="age" type="number" value="{{ $errors->any() ? old('age') : '' }}"/>
+            <input name="age" type="text" value="{{ $errors->any() ? old('age') : '' }}"/>
             @error('age')
                 <p class="error">{{ $message }}</p>
             @enderror
@@ -85,7 +85,7 @@
         <div>
             <label>Почта</label>
             <br>
-            <input name="email" type="email" value="{{ $errors->any() ? old('email') : '' }}"/>
+            <input name="email" type="text" value="{{ $errors->any() ? old('email') : '' }}"/>
             @error('email')
                 <p class="error">{{ $message }}</p>
             @enderror
