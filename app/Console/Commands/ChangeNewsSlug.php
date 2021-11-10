@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\News;
+use App\Models\Redirect;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -42,8 +43,17 @@ class ChangeNewsSlug extends Command
         $oldSlug = $this->argument('oldSlug');
         $newSlug = $this->argument('newSlug');
 
-        if ($oldSlug === $newSlug) {
+        $oldUrl = route('news_item', ['slug' => $oldSlug], false);
+        $newUrl = route('news_item', ['slug' => $newSlug], false);
+
+        if ($oldSlug === $newUrl) {
             $this->error('Old slug and new slug must be different');
+            return 1;
+        }
+
+        $redirect = Redirect::where('oldSlug', $oldUrl)->where('newSlug', $newUrl);
+        if ($redirect === null) {
+            $this->error("Redirect with old slug $oldUrl and new slug $newUrl already exist");
             return 1;
         }
 
@@ -53,7 +63,8 @@ class ChangeNewsSlug extends Command
             return 1;
         }
 
-        DB::transaction(function () use ($news, $newSlug) {
+        DB::transaction(function () use ($news, $newSlug, $newUrl) {
+            Redirect::where('old_slug',  $newUrl)->delete();
             $news->slug = $newSlug;
             $news->save();
         });

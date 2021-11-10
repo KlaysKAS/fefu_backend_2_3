@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $title
  * @property string $slug
- * @property string $description
+ * @property string|null $description
  * @property string $text
  * @property boolean $is_published
  * @property Carbon $published_at
@@ -33,8 +33,8 @@ class News extends Model
     public function save(array $options = [])
     {
         if ($this->exists && $this->isDirty('slug')) {
-            $oldSlug = $this->getOriginal('slug');
-            $newSlug = $this->slug;
+            $oldSlug = route('news_item', ['slug' => $this->getOriginal('slug')], false);
+            $newSlug = route('news_item', ['slug' => $this->slug], false);
 
             $redirect = new Redirect();
             $redirect->old_slug = $oldSlug;
