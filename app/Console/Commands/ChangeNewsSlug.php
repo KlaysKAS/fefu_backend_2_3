@@ -46,12 +46,12 @@ class ChangeNewsSlug extends Command
         $oldUrl = route('news_item', ['slug' => $oldSlug], false);
         $newUrl = route('news_item', ['slug' => $newSlug], false);
 
-        if ($oldSlug === $newUrl) {
+        if ($oldSlug === $newSlug) {
             $this->error('Old slug and new slug must be different');
             return 1;
         }
 
-        $redirect = Redirect::where('oldSlug', $oldUrl)->where('newSlug', $newUrl);
+        $redirect = Redirect::where('old_slug', $oldUrl)->where('new_slug', $newUrl);
         if ($redirect === null) {
             $this->error("Redirect with old slug $oldUrl and new slug $newUrl already exist");
             return 1;
