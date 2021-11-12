@@ -51,8 +51,8 @@ class ChangeNewsSlug extends Command
             return 1;
         }
 
-        $redirect = Redirect::where('old_slug', $oldUrl)->where('new_slug', $newUrl);
-        if ($redirect === null) {
+        $redirect = Redirect::where('old_slug', $oldUrl)->where('new_slug', $newUrl)->first();
+        if ($redirect !== null) {
             $this->error("Redirect with old slug $oldUrl and new slug $newUrl already exist");
             return 1;
         }
