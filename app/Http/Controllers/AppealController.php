@@ -16,7 +16,13 @@ class AppealController extends Controller
     public function __invoke(Request $request)
     {
         $success = $request->session()->get('success', false);
-
+        $showMessage = false;
+        if ($request->get('accept') == "1") {
+            if ($request->session()->get('message')) {
+                $showMessage = true;
+            }
+            $request->session()->put('show_message', false);
+        }
         if ($request->isMethod('post')) {
             $validated = $request->validate(AppealPostRequest::rules());
 
@@ -32,11 +38,12 @@ class AppealController extends Controller
             $appeal->save();
 
             $success = true;
+            $request->session()->put('appeal', true);
 
             return redirect()
                 ->route('appeal')
                 ->with('success', $success);
         } else
-            return view('appeal', ['success' => $success]);
+            return view('appeal', ['success' => $success, 'message' => $showMessage]);
     }
 }
