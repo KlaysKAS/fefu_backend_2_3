@@ -14,8 +14,10 @@ class CreateSuggestSettingsTable extends Migration
     public function up()
     {
         Schema::create('suggest_settings', function (Blueprint $table) {
+            $table->id();
             $table->integer('frequency');
             $table->integer('maximum');
+            $table->timestamps();
         });
     }
 
