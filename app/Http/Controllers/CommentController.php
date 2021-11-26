@@ -20,7 +20,7 @@ class CommentController extends Controller
      */
     public function index(Post $post) : JsonResponse
     {
-        $comments = $post->comments()->ordered()->paginate(self::PAGE_SIZE);
+        $comments = $post->comments()->with('user')->ordered()->paginate(self::PAGE_SIZE);
         return response()->json(CommentResource::collection($comments));
     }
 
@@ -71,7 +71,7 @@ class CommentController extends Controller
     public function update(Post $post, Request $request, Comment $comment) : JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'text' => 'sometimes|required|max:200',
+            'text' => 'required|max:200',
         ]);
 
         if ($validator->fails())
