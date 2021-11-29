@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\ApiAuthenticationController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Requests\RegistrationRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,3 +40,11 @@ Route::apiResource('posts.comments', CommentController::class)
     ->missing(function () {
         return response()->json(['message' => 'Comment not found']);
     });
+
+Route::post('registration', [ApiAuthenticationController::class, 'registration']);
+
+Route::post('login', [ApiAuthenticationController::class, 'login']);
+
+Route::middleware('auth:sanctum')->post('logout', [ApiAuthenticationController::class, 'logout']);
+
+Route::middleware('auth:sanctum')->get('profile', [ApiAuthenticationController::class, 'profile']);
