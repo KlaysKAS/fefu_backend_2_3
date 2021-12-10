@@ -45,6 +45,7 @@ Route::post('registration', [ApiAuthenticationController::class, 'registration']
 
 Route::post('login', [ApiAuthenticationController::class, 'login']);
 
-Route::middleware('auth:sanctum')->post('logout', [ApiAuthenticationController::class, 'logout']);
-
-Route::middleware('auth:sanctum')->get('profile', [ApiAuthenticationController::class, 'profile']);
+Route::group(['middleware' => 'auth:sanctum'], function() {
+    Route::get('profile', [ApiAuthenticationController::class, 'profile']);
+    Route::post('logout', [ApiAuthenticationController::class, 'logout']);
+});

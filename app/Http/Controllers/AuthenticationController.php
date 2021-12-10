@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegistrationRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,8 +31,8 @@ class AuthenticationController extends Controller
     public function login(Request $request) {
         if ($request->isMethod('post')) {
             $credentials = $request->validate([
-                'name' => ['required', 'regex:/^[-a-zA-Z_0-9]{5,30}$/'],
-                'password' => ['required', 'regex:/(?=.*[0-9])(?=.*[!@#$%^&*.,])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&*.,]{10,30}/']
+                'name' => ['required', 'between:5,30'],
+                'password' => ['required', 'between:10,30']
             ]);
 
             $credentials['name'] = strtolower($credentials['name']);
@@ -52,5 +53,10 @@ class AuthenticationController extends Controller
         session()->invalidate();
         session()->regenerateToken();
         return redirect('/');
+    }
+
+    public function profile(): UserResource
+    {
+        return new UserResource(Auth::user());
     }
 }

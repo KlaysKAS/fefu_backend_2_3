@@ -36,10 +36,7 @@ Route::match(['get', 'post'], '/registration', [AuthenticationController::class,
 Route::match(['get', 'post'], '/login', [AuthenticationController::class, 'login'])
     ->name('login');
 
-Route::get('/logout', [AuthenticationController::class, 'logout'])
-    ->name('logout')
-    ->middleware('auth');
-
-Route::get('/profile', function () {
-    return new UserResource(Auth::user());
-})->name('profile')->middleware('auth');
+Route::group(['middleware' => 'auth'], function() {
+    Route::get('/profile', [AuthenticationController::class, 'profile'])->name('profile');
+    Route::get('/logout', [AuthenticationController::class, 'logout'])->name('logout');
+});

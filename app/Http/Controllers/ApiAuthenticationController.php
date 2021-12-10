@@ -29,13 +29,13 @@ class ApiAuthenticationController extends Controller
         $user->save();
 
         $token = $user->createToken('token');
-        return response()->json(['token' => $token, 'user' => new UserResource($user)]);
+        return response()->json(['token' => $token, 'user' => new UserResource($user)], 201);
     }
 
     public function login(Request $request) : JsonResponse {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'regex:/^[-a-zA-Z_0-9]{5,30}$/'],
-            'password' => ['required', 'regex:/(?=.*[0-9])(?=.*[!@#$%^&*.,])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&*.,]{10,30}/']
+            'name' => ['required', 'between:5,30'],
+            'password' => ['required', 'between:10,30']
         ]);
 
         if ($validator->fails()) {
@@ -45,14 +45,16 @@ class ApiAuthenticationController extends Controller
 
         $credentials = $validator->validated();
         $credentials['name'] = strtolower($credentials['name']);
+
+        if (!Auth::attempt(['name' => $credentials['name'], 'password' => $credentials['password']]))
+            return response()->json(['message' => 'Bad login or password']);
+
         $user = User::query()
             ->where('name', $credentials['name'])
             ->first();
-        if (!$user || !Hash::check($credentials['password'], $user->password))
-            return response()->json(['message' => 'Bad login or password']);
 
         $token = $user->createToken('token');
-        return response()->json(['token' => $token, 'user' => new UserResource($user)]);
+        return response()->json(['token' => $token, 'user' => new UserResource($user)], 201);
     }
 
     public function logout(Request $request) : JsonResponse {
