@@ -29,7 +29,7 @@ class ApiAuthenticationController extends Controller
         $user->save();
 
         $token = $user->createToken('token');
-        return response()->json(['token' => $token, 'user' => new UserResource($user)], 201);
+        return response()->json(['token' => $token->plainTextToken, 'user' => new UserResource($user)], 201);
     }
 
     public function login(Request $request) : JsonResponse {
@@ -54,7 +54,7 @@ class ApiAuthenticationController extends Controller
             ->first();
 
         $token = $user->createToken('token');
-        return response()->json(['token' => $token, 'user' => new UserResource($user)], 201);
+        return response()->json(['token' => $token->plainTextToken, 'user' => new UserResource($user)]);
     }
 
     public function logout(Request $request) : JsonResponse {
