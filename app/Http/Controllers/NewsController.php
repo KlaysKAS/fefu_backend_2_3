@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\News;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use function MongoDB\BSON\toJSON;
 
 class NewsController extends Controller
