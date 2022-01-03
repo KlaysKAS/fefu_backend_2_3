@@ -8,11 +8,18 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
     private const PAGE_SIZE = 5;
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum', ['only' => ['store', 'update', 'destroy']]);
+        $this->authorizeResource(Comment::class, 'comment', ['except' => ['index', 'show']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -43,7 +50,7 @@ class CommentController extends Controller
 
         $comment = new Comment();
         $comment->text = $validator->validated()['text'];
-        $comment->user_id = User::inRandomOrder()->first()->id;
+        $comment->user_id = Auth::user()->id;
         $comment->post_id = $post->id;
         $comment->save();
 
