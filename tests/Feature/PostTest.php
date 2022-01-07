@@ -2,13 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
+use Database\Seeders\CommentSeeder;
 use Database\Seeders\PostSeeder;
 use Database\Seeders\UserSeeder;
-use Faker\Provider\Lorem;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -227,6 +226,20 @@ class PostTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'message' => 'Post removed successfully'
+            ]);
+    }
+
+    public function test_destroy_with_comments() {
+        $this->seed(CommentSeeder::class);
+        $comment = Comment::query()->first();
+        $post = Post::query()->where('id', $comment->post_id)->first();
+        $user = User::query()->where('id', $comment->user_id)->first();
+        Sanctum::actingAs($user);
+        $request = $this->deleteJson('api/posts/'.$post->slug);
+        $request
+            ->assertStatus(403)
+            ->assertJson([
+                'message' => 'This action is unauthorized.'
             ]);
     }
 
