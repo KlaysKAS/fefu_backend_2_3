@@ -4,6 +4,6 @@ namespace App\Enums;
 
 class Role
 {
-    public const MODERATOR = 0;
-    public const ADMIN = 1;
+    public const MODERATOR = 1;
+    public const ADMIN = 2;
 }
