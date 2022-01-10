@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiAuthenticationController;
+use App\Http\Controllers\ApiNewsController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Requests\RegistrationRequest;
@@ -41,6 +42,14 @@ Route::apiResource('posts.comments', CommentController::class)
         return response()->json(['message' => 'Comment not found']);
     });
 
+Route::apiResource('news', ApiNewsController::class)
+    ->scoped([
+        'news' => 'slug'
+    ])
+    ->missing(function () {
+        return response()->json(['message' => 'News not found']);
+    });
+
 Route::post('registration', [ApiAuthenticationController::class, 'registration']);
 
 Route::post('login', [ApiAuthenticationController::class, 'login']);
@@ -49,3 +58,5 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::get('profile', [ApiAuthenticationController::class, 'profile']);
     Route::post('logout', [ApiAuthenticationController::class, 'logout']);
 });
+
+
