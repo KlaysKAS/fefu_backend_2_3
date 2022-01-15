@@ -2,19 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\Comment;
+use App\Enums\Role;
 use App\Models\Post;
 use App\Models\User;
 use Database\Seeders\CommentSeeder;
 use Database\Seeders\PostSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PostTest extends TestCase
 {
-//    use RefreshDatabase;
 
     public function setUp(): void
     {
@@ -70,8 +68,7 @@ class PostTest extends TestCase
                 'message' => 'Post not found'
             ]);
 
-        $post = Post::query()->first();
-        $author = User::query()->where('id', $post->user_id)->first();
+        $post = Post::query()->with('user')->first();
         $response = $this->getJson('api/posts/' . $post->slug);
         $response
             ->assertStatus(200)
@@ -80,8 +77,8 @@ class PostTest extends TestCase
                 'slug' => $post->slug,
                 'text' => $post->text,
                 'author' => [
-                    'name' => $author->name,
-                    'email' => $author->email
+                    'name' => $post->user->name,
+                    'email' => $post->user->email
                 ]
             ]);
     }
@@ -90,7 +87,7 @@ class PostTest extends TestCase
     {
         $post = [
             'title' => 'Guest post',
-            'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec aliquam orci. Pellentesque auctor vehicula efficitur. Curabitur erat ligula, elementum vulputate elementum ut, sollicitudin sollicitudin ex. Aliquam erat volutpat. Donec volutpat eget neque id consequat. Nulla ultrices dui odio. Mauris turpis magna, finibus vel magna a, scelerisque convallis nulla. Morbi nec nisi quam. Fusce vitae consequat arcu. Nam eu iaculis massa. Nam sapien leo, pellentesque quis velit a, maximus laoreet felis.'
+            'text' => 'Lorem ipsum dolor, maximus laoreet felis.'
         ];
 
         $request = $this->postJson('api/posts', $post);
@@ -105,10 +102,11 @@ class PostTest extends TestCase
     {
         $post = [
             'title' => 'User post',
-            'text' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nec aliquam orci. Pellentesque auctor vehicula efficitur. Curabitur erat ligula, elementum vulputate elementum ut, sollicitudin sollicitudin ex. Aliquam erat volutpat. Donec volutpat eget neque id consequat. Nulla ultrices dui odio. Mauris turpis magna, finibus vel magna a, scelerisque convallis nulla. Morbi nec nisi quam. Fusce vitae consequat arcu. Nam eu iaculis massa. Nam sapien leo, pellentesque quis velit a, maximus laoreet felis.'
+            'text' => 'Lorem ip, maximus laoreet felis.'
         ];
-        Sanctum::actingAs(User::factory()->create());
-        $request = $this->postJson('api/posts', $post);
+        $request = $this
+            ->actingAs(User::factory()->create(), 'sanctum')
+            ->postJson('api/posts', $post);
         $request
             ->assertStatus(201)
             ->assertJson([
@@ -118,8 +116,9 @@ class PostTest extends TestCase
     }
 
     public function test_store_validation() {
-        Sanctum::actingAs(User::factory()->create());
-        $request = $this->postJson('api/posts', []);
+        $request = $this
+            ->actingAs(User::factory()->create(), 'sanctum')
+            ->postJson('api/posts', []);
         $request
             ->assertStatus(422)
             ->assertJson([
@@ -142,8 +141,9 @@ class PostTest extends TestCase
 
     public function test_update_not_author() {
         $post = Post::query()->first();
-        Sanctum::actingAs(User::factory()->create());
-        $request = $this->putJson('api/posts/'.$post->slug, ['text' => 'test']);
+        $request = $this
+            ->actingAs(User::factory()->create(), 'sanctum')
+            ->putJson('api/posts/'.$post->slug, ['text' => 'test']);
         $request
             ->assertStatus(403)
             ->assertJson([
@@ -152,11 +152,11 @@ class PostTest extends TestCase
     }
 
     public function test_update_author() {
-        $post = Post::query()->first();
+        $post = Post::query()->with('user')->first();
         $post->text = 'text';
-        $user = User::query()->where('id', $post->user_id)->first();
-        Sanctum::actingAs($user);
-        $request = $this->putJson('api/posts/'.$post->slug, ['text' => 'text']);
+        $request = $this
+            ->actingAs($post->user, 'sanctum')
+            ->putJson('api/posts/'.$post->slug, ['text' => 'text']);
         $request
             ->assertStatus(200)
             ->assertJson([
@@ -169,10 +169,11 @@ class PostTest extends TestCase
     public function test_update_moderator() {
         $post = Post::query()->first();
         $user = User::factory()->make([
-            'role' => '1'
+            'role' => Role::MODERATOR
         ]);
-        Sanctum::actingAs($user);
-        $request = $this->putJson('api/posts/'.$post->slug, ['text' => 'test']);
+        $request = $this
+            ->actingAs($user, 'sanctum')
+            ->putJson('api/posts/'.$post->slug, ['text' => 'test']);
         $request
             ->assertStatus(200)
             ->assertJson([
@@ -184,10 +185,11 @@ class PostTest extends TestCase
 
     public function test_update_not_exist_slug() {
         $user = User::factory()->make([
-            'role' => '1'
+            'role' => Role::MODERATOR
         ]);
-        Sanctum::actingAs($user);
-        $request = $this->putJson('api/posts/_', ['text' => 'test']);
+        $request = $this
+            ->actingAs($user, 'sanctum')
+            ->putJson('api/posts/_', ['text' => 'test']);
         $request
             ->assertStatus(404)
             ->assertJson([
@@ -208,8 +210,9 @@ class PostTest extends TestCase
     public function test_destroy_not_author() {
         $post = Post::factory()->create();
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
-        $request = $this->deleteJson('api/posts/'.$post->slug);
+        $request = $this
+            ->actingAs($user, 'sanctum')
+            ->deleteJson('api/posts/'.$post->slug);
         $request
             ->assertStatus(403)
             ->assertJson([
@@ -218,10 +221,10 @@ class PostTest extends TestCase
     }
 
     public function test_destroy_author() {
-        $post = Post::query()->first();
-        $user = User::query()->where('id', $post->user_id)->first();
-        Sanctum::actingAs($user);
-        $request = $this->deleteJson('api/posts/'.$post->slug);
+        $post = Post::query()->with('user')->first();
+        $request = $this
+            ->actingAs($post->user, 'sanctum')
+            ->deleteJson('api/posts/'.$post->slug);
         $request
             ->assertStatus(200)
             ->assertJson([
@@ -231,11 +234,10 @@ class PostTest extends TestCase
 
     public function test_destroy_with_comments() {
         $this->seed(CommentSeeder::class);
-        $comment = Comment::query()->first();
-        $post = Post::query()->where('id', $comment->post_id)->first();
-        $user = User::query()->where('id', $comment->user_id)->first();
-        Sanctum::actingAs($user);
-        $request = $this->deleteJson('api/posts/'.$post->slug);
+        $post = Post::query()->whereHas('comments')->with('user')->first();
+        $request = $this
+            ->actingAs($post->user, 'sanctum')
+            ->deleteJson('api/posts/'.$post->slug);
         $request
             ->assertStatus(403)
             ->assertJson([
@@ -246,10 +248,11 @@ class PostTest extends TestCase
     public function test_destroy_moderator() {
         $post = Post::query()->first();
         $user = User::factory()->make([
-            'role' => '1'
+            'role' => Role::MODERATOR
         ]);
-        Sanctum::actingAs($user);
-        $request = $this->deleteJson('api/posts/'.$post->slug);
+        $request = $this
+            ->actingAs($user, 'sanctum')
+            ->deleteJson('api/posts/'.$post->slug);
         $request
             ->assertStatus(200)
             ->assertJson([
@@ -261,8 +264,9 @@ class PostTest extends TestCase
         $user = User::factory()->make([
             'role' => '1'
         ]);
-        Sanctum::actingAs($user);
-        $request = $this->deleteJson('api/posts/_');
+        $request = $this
+            ->actingAs($user, 'sanctum')
+            ->deleteJson('api/posts/_');
         $request
             ->assertStatus(404)
             ->assertJson([
