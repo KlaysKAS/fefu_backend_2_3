@@ -25,10 +25,9 @@ class PostPolicy
         }
         if ($user->id === $post->user_id) {
             $comments = $post->comments()->where('user_id', '!=', $user->id)->first();
-            if (!$comments) {
+            if ($comments === null) {
                 return true;
             }
         }
-        return false;
     }
 }

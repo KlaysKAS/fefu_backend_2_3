@@ -39,8 +39,6 @@ class CommentController extends Controller
      */
     public function store(Request $request, Post $post) : JsonResponse
     {
-
-
         $validator = Validator::make($request->all(), [
            'text' => 'required|max:200',
         ]);
@@ -75,7 +73,7 @@ class CommentController extends Controller
      * @param  \App\Models\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function update(Post $post, Request $request, Comment $comment) : JsonResponse
+    public function update(Request $request, Post $post, Comment $comment) : JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'text' => 'required|max:200',
