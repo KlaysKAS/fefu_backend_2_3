@@ -221,9 +221,10 @@ class PostTest extends TestCase
     }
 
     public function test_destroy_author() {
-        $post = Post::query()->with('user')->first();
+        $post = Post::factory()->create();
+        $user = User::query()->where('id', $post->user_id)->first();
         $request = $this
-            ->actingAs($post->user, 'sanctum')
+            ->actingAs($user, 'sanctum')
             ->deleteJson('api/posts/'.$post->slug);
         $request
             ->assertStatus(200)

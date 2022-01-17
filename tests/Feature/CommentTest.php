@@ -34,7 +34,7 @@ class CommentTest extends TestCase
         $request
             ->assertStatus(404)
             ->assertJson([
-                'message' => 'No query results for model [App\\Models\\Post] _'
+                'message' => 'Post not found'
             ]);
     }
 
@@ -60,7 +60,7 @@ class CommentTest extends TestCase
         $post = Post::factory()->create();
         $request = $this->getJson('/api/posts/'.$post->slug.'/comments/0');
         $request
-            ->assertStatus(200)
+            ->assertStatus(404)
             ->assertJson([
                 'message' => 'Comment not found'
             ]);
@@ -130,8 +130,9 @@ class CommentTest extends TestCase
 
     public function test_update_not_author() {
         $comment = Comment::query()->with('post')->first();
+        $user = User::factory()->make();
         $request = $this
-            ->actingAs(User::factory()->create(), 'sanctum')
+            ->actingAs($user, 'sanctum')
             ->putJson('api/posts/'.$comment->post->slug.'/comments/'.$comment->id, ['text' => 'test']);
         $request
             ->assertStatus(403)
@@ -176,7 +177,7 @@ class CommentTest extends TestCase
             ->actingAs($user, 'sanctum')
             ->putJson('api/posts/'.$post->slug.'/comments/0', ['text' => 'test']);
         $request
-            ->assertStatus(200)
+            ->assertStatus(404)
             ->assertJson([
                 'message' => 'Comment not found'
             ]);
@@ -240,7 +241,7 @@ class CommentTest extends TestCase
             ->actingAs($user, 'sanctum')
             ->deleteJson('api/posts/'.$post->slug.'/comments/0');
         $request
-            ->assertStatus(200)
+            ->assertStatus(404)
             ->assertJson([
                 'message' => 'Comment not found'
             ]);
